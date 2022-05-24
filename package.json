@@ -1,0 +1,39 @@
+{ "name": "postgres-dump-writer-helpers-220524-pmb",
+  "version": "0.0.1",
+  "description": "Utility functions for exporting lists of dictionary objects as postgres files.",
+  "keywords": [
+    "postgres"
+  ],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/postgres-dump-writer-helpers-220524-pmb-js/#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/postgres-dump-writer-helpers-220524-pmb-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/postgres-dump-writer-helpers-220524-pmb-js/issues"
+  },
+  "contributors": [],
+
+  "private": false, "license": "MIT",
+
+  "main": "src/index.mjs",
+  "scripts": { "test": "elp && nodemjs test/all.mjs" },
+  "directories": { "test": "test" },
+  "eslintConfig": { "extends": "nodejs-pmb" },
+
+  "dependencies": {
+    "equal-pmb": "^0.1.24"
+  },
+  "devDependencies": {
+    "eslint-config-nodejs-pmb": "^0.3.4",
+    "eslint-plugin-json-light-pmb": "^1.0.7",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-pretty-pmb": "^1.0.5",
+    "nodemjs": "^0.1.11"
+  },
+
+
+  "engines": { "npm": ">=7.0.0", "node": ">=16.0.0" }
+}
