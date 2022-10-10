@@ -1,6 +1,7 @@
 // -*- coding: utf-8, tab-width: 2 -*-
 
 import basics from './basics.mjs';
+import stmtStream from './stmtStream.mjs';
 
 const doNothing = Boolean;
 
@@ -27,7 +28,18 @@ const EX = function fmtInsert(rec, ...merge) {
 };
 
 
+Object.assign(EX, {
 
+  batches(tableName, recOrRecs, streamOpts) {
+    const pgStream = stmtStream.makeStringArray(streamOpts);
+    const ovr = { TABLE: tableName, STREAM: pgStream };
+    [].concat(recOrRecs).forEach(rec => EX({ ...rec, ...ovr }));
+    pgStream.end();
+    return pgStream.stmts;
+  },
+
+
+});
 
 
 

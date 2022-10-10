@@ -1,5 +1,5 @@
 { "name": "postgres-dump-writer-helpers-220524-pmb",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Utility functions for exporting lists of dictionary objects as postgres files.",
   "keywords": [
     "postgres"
@@ -27,11 +27,13 @@
     "equal-pmb": "^0.1.24"
   },
   "devDependencies": {
-    "eslint-config-nodejs-pmb": "^0.3.4",
+    "eslint-config-nodejs-pmb": "^0.3.5",
     "eslint-plugin-json-light-pmb": "^1.0.7",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^15.2.4",
     "eslint-pretty-pmb": "^1.0.5",
-    "nodemjs": "^0.1.11"
+    "nodemjs": "^0.1.12",
+    "p-tape-all-in-list": "^0.1.1",
+    "usnam-pmb": "^0.2.5"
   },
 
 

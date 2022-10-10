@@ -4,26 +4,53 @@ import equal from 'equal-pmb';
 
 const namedEqual = equal.named.deepStrictEqual;
 
+function initStream(prototype, impl, userOverrides) {
+  return Object.assign(Object.create(prototype), {
+    nRecTotal: 0,
+    curStmt: false,
+  }, impl, userOverrides);
+};
+
 
 const EX = {
 
-  fromNativeWriteStream(wriSt) {
-    return Object.assign(Object.create(this), {
-      getNativeStream() { return wriSt; },
+  fromNativeWriteStream(wriSt, userOverrides) {
+    const origStm = this;
+    return initStream(origStm, {
       appendRaw(x) { return wriSt.write(x); },
-      nRecTotal: 0,
-      curStmt: false,
-    });
+      end() {
+        origStm.end.call(this);
+        wriSt.end();
+      },
+    }, userOverrides);
+  },
+
+  makeStringArray(userOverrides) {
+    const origStm = this;
+    return initStream(origStm, {
+      stmtPadEnd: '',
+      stmts: [],
+      buf: '',
+      appendRaw(x) { this.buf += x; },
+      endCurrentStatement() {
+        origStm.endCurrentStatement.call(this);
+        this.stmts.push(this.buf);
+        this.buf = '';
+      },
+    }, userOverrides);
   },
 
   maxRecPerStmt: 800,
+  stmtPadEnd: '\n\n',
 
   endCurrentStatement() {
     const stm = this;
     const cur = stm.curStmt;
     stm.curStmt = false;
     if (!cur) { return; }
-    stm.appendRaw(';\n\n');
+    stm.appendRaw(';');
+    const { stmtPadEnd } = stm;
+    if (stmtPadEnd) { stm.appendRaw(stmtPadEnd); }
   },
 
   appendGluedRecord(how) {
@@ -57,18 +84,17 @@ const EX = {
     stm.appendRaw('  ');
     stm.appendRaw(valuesGlued);
     stm.nRecTotal += 1;
-    if (cur.maxMoreRec >= 1) {
-      cur.nRec += 1;
-      cur.maxMoreRec -= 1;
-    } else {
-      stm.endCurrentStatement();
-    }
+    cur.nRec += 1;
+    cur.maxMoreRec -= 1;
+    const canMore = (cur.maxMoreRec >= 1);
+    // console.debug('stmtStream add', { canMore }, stm);
+    if (!canMore) { stm.endCurrentStatement(); }
   },
 
   end() {
     const stm = this;
     stm.endCurrentStatement();
-    stm.getNativeStream().end();
+    // console.debug('stmtStream end', stm);
   },
 
 };
