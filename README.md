@@ -13,7 +13,7 @@ Utility functions for exporting lists of dictionary objects as postgres files.
 API
 ---
 
-This module an object that holds these functions:
+This module exports an object that holds these functions:
 
 ### quoteId(id)
 
