@@ -24,7 +24,7 @@ const EX = {
   },
 
   quoteId(id) {
-    const safe = (safeIdRgx.exec(id) || false)[0];
+    const safe = (safeIdRgx.exec(id || '') || false)[0];
     if (id === safe) { return '"' + id + '"'; }
     throw new Error('Identifier contains suspicious characters: ' + id);
   },
