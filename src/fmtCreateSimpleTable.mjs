@@ -29,7 +29,7 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   }
   if (opt.addSeqCol) {
     if (opt.dropSeq) {
-      code += 'DROP SEQUENCE IF EXISTS ' + seqName + ';\n';
+      code += 'DROP SEQUENCE IF EXISTS ' + quoteId(seqName) + ';\n';
     }
     code += ('CREATE SEQUENCE ' + quoteId(seqName)
       + ' INCREMENT 1'
