@@ -34,6 +34,7 @@ EX.api = {
     const destFilePath = wr.destFilePathTemplate.join(tbl);
     const fileStream = nodeFs.createWriteStream(destFilePath);
     const pgStream = stmtStream.fromNativeWriteStream(fileStream);
+    pgStream.outputFilename = destFilePath;
     ats.set(tbl, pgStream);
     return pgStream;
   },
