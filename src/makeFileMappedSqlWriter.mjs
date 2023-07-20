@@ -31,10 +31,15 @@ EX.api = {
     const ats = wr.activeTableStreams;
     const has = ats.get(tbl);
     if (has) { return has; }
-    const destFilePath = wr.destFilePathTemplate.join(tbl);
-    const fileStream = nodeFs.createWriteStream(destFilePath);
-    const pgStream = stmtStream.fromNativeWriteStream(fileStream);
-    pgStream.outputFilename = destFilePath;
+    let pgStream;
+    if (wr.destFilePathTemplate.length) {
+      const destFilePath = wr.destFilePathTemplate.join(tbl);
+      const fileStream = nodeFs.createWriteStream(destFilePath);
+      pgStream = stmtStream.fromNativeWriteStream(fileStream);
+      pgStream.outputFilename = destFilePath;
+    } else {
+      pgStream = stmtStream.makeStringArray();
+    }
     ats.set(tbl, pgStream);
     return pgStream;
   },
