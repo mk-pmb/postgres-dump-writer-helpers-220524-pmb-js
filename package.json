@@ -26,14 +26,15 @@
   "dependencies": {
     "equal-pmb": "^0.1.24",
     "getown": "^1.0.0",
-    "is-string": "^1.0.7"
+    "is-string": "^1.0.7",
+    "lodash.mapvalues": "^4.6.0"
   },
   "devDependencies": {
     "eslint-config-nodejs-pmb": "^0.3.5",
     "eslint-plugin-json-light-pmb": "^1.0.7",
     "eslint-plugin-n": "^15.2.4",
     "eslint-pretty-pmb": "^1.0.5",
-    "nodemjs": "^0.1.13",
+    "nodemjs": "^0.1.14",
     "p-tape-all-in-list": "^0.1.1",
     "usnam-pmb": "^0.2.5"
   },
