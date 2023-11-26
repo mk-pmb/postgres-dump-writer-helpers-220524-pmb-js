@@ -43,7 +43,7 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   code += 'CREATE TABLE ' + tblFullNameQ + ' (\n';
   if (opt.addSeqCol) {
     code += ('    ' + quoteId(opt.seqColName)
-      + ' integer DEFAULT nextval(' + quoteStr(seqName) + ') NOT NULL,\n');
+      + ' serial DEFAULT nextval(' + quoteStr(seqName) + ') NOT NULL,\n');
   }
 
   function indexLike(h, c, n, t) {
