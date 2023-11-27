@@ -21,29 +21,20 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   const autoComboUniques = {};
 
   const tblName = opt.tableNamePrefix + tblNamePart;
-  const seqName = tblName + '_' + opt.seqColName + '_seq';
 
   let code = '';
   if (opt.dropTable) {
-    code += 'DROP TABLE IF EXISTS ' + quoteId(tblName) + ';\n';
-  }
-  if (opt.addSeqCol) {
-    if (opt.dropSeq) {
-      code += 'DROP SEQUENCE IF EXISTS ' + quoteId(seqName) + ';\n';
-    }
-    code += ('CREATE SEQUENCE ' + quoteId(seqName)
-      + ' INCREMENT 1'
-      + ' MINVALUE ' + opt.seqColMin
-      + ' MAXVALUE ' + opt.seqColMax
-      + ' CACHE 1;\n');
+    code += ('DROP TABLE IF EXISTS ' + quoteId(tblName)
+      + (opt.dropCascade ? ' CASCADE' : '') + ';\n');
   }
   if (code) { code += '\n'; }
 
   const tblFullNameQ = quoteId(opt.schemaName) + '.' + quoteId(tblName);
   code += 'CREATE TABLE ' + tblFullNameQ + ' (\n';
-  if (opt.addSeqCol) {
-    code += ('    ' + quoteId(opt.seqColName)
-      + ' serial DEFAULT nextval(' + quoteStr(seqName) + ') NOT NULL,\n');
+
+  if (opt.primKeyName) {
+    code += ('    ' + quoteId(opt.primKeyName)
+      + ' ' + opt.primKeyType + ' PRIMARY KEY');
   }
 
   function indexLike(h, c, n, t) {
@@ -57,8 +48,8 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
     if (!cSpec) { return; }
     if (isStr(cSpec)) { cSpec = EX.parseColSpecStr(cSpec, cName); }
     addCategListItem(autoComboUniques, cSpec.autoUniqueGroup, cName);
-    code += ('    ' + quoteId(cName) + ' ' + cSpec.type
-      + (cSpec.required ? ' NOT NULL' : '') + ',\n');
+    code += (',\n    ' + quoteId(cName) + ' ' + cSpec.type
+      + (cSpec.required ? ' NOT NULL' : ''));
     if (cSpec.indexAlgo) {
       extraIndexes += ('CREATE INDEX ' + quoteId(tblName + '_' + cName)
         + ' ON ' + tblFullNameQ + ' USING ' + cSpec.indexAlgo
@@ -67,13 +58,10 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   });
 
   Object.values(autoComboUniques).forEach(function addAU(colNames) {
-    code += indexLike('    CONSTRAINT ', colNames, ' UNIQUE (', '),\n');
+    code += indexLike(',\n    CONSTRAINT ', colNames, ' UNIQUE (', ')');
   });
 
-  code += ('    CONSTRAINT ' + quoteId(tblName + '_pkey')
-    + ' PRIMARY KEY (' + quoteId(opt.seqColName) + ')\n'
-    + ') WITH (oids = false);\n');
-
+  code += ') WITH (oids = false);\n';
   code += extraIndexes;
 
 
@@ -96,11 +84,9 @@ Object.assign(EX, {
     schemaName: 'public',
     tableNamePrefix: '',
     dropTable: true,
-    addSeqCol: true,
-    dropSeq: true,
-    seqColName: 'pg_row_id',
-    seqColMin: 1,
-    seqColMax: (2 ** 31) - 1,
+    dropCascade: true, // also DROP anything that would prevent DROPping.
+    primKeyName: 'pg_row_id',
+    primKeyType: 'serial',
   },
 
 
