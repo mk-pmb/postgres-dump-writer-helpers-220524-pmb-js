@@ -3,6 +3,7 @@
 import getOwn from 'getown';
 import isStr from 'is-string';
 
+import adviseOnPgDataTypes from './adviseOnPgDataTypes.mjs';
 import basics from './basics.mjs';
 
 
@@ -48,7 +49,7 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
     if (!cSpec) { return; }
     if (isStr(cSpec)) { cSpec = EX.parseColSpecStr(cSpec, cName); }
     addCategListItem(autoComboUniques, cSpec.autoUniqueGroup, cName);
-    code += (',\n    ' + quoteId(cName) + ' ' + cSpec.type
+    code += (',\n    ' + quoteId(cName) + ' ' + cSpec.pgType
       + (cSpec.required ? ' NOT NULL' : ''));
     if (cSpec.indexAlgo) {
       extraIndexes += ('CREATE INDEX ' + quoteId(tblName + '_' + cName)
@@ -92,35 +93,38 @@ Object.assign(EX, {
 
   typeAlias: Object.assign(function a(t) { return getOwn(a, t, t); }, {
     'char*': 'character varying',
-    ts: 'timestamptz',
+    ts: 'timestamptz(0)',
+    ts_milli: 'timestamptz(3)',
+    ts_micro: 'timestamptz(6)',
+    // ts_nano: 'timestamptz(9)', // beyond pg's time precision.
   }),
 
 
   parseColSpecStr(s, n) {
-    const l = s.split(/\s+/).filter(Boolean);
-    const t = EX.typeAlias(l.shift());
-    const c = {
-      type: t,
+    const [simplifiedTypeName, ...simplifiedTypeFlags] = s.split(/\s+/);
+    const pgType = EX.typeAlias(simplifiedTypeName);
+    const ignoredAdvice = [];
+    const colSpec = {
+      pgType,
       required: true,
     };
-    l.forEach(function parseExtras(x) {
-      if (x === '?') {
-        c.required = false;
-        return;
-      }
-      if (x === 'B') {
-        c.indexAlgo = 'btree';
-        return;
-      }
-      if (x.startsWith('¹')) {
-        c.autoUniqueGroup = (x.slice(1) || n);
-        return;
-      }
+    function colSet(k, v) { colSpec[k] = v; }
+    simplifiedTypeFlags.forEach(function parseExtras(x) {
+      if (x === '?') { return colSet('required', false); }
+      if (x === 'B') { return colSet('indexAlgo', 'btree'); }
+      const f = x.slice(0, 1);
+      const y = x.slice(1);
+      if (f === '¹') { return colSet('autoUniqueGroup', y || n); }
+      if (f === '!') { return ignoredAdvice.push(y); }
       const e = ('Unsupported column type modifier '
         + quoteStr(x) + ' for column ' + quoteStr(n));
       throw new Error(e);
     });
-    return c;
+    adviseOnPgDataTypes.fatal({
+      ignore: ignoredAdvice,
+      trace: 'Column "' + n + '":',
+    }, pgType);
+    return colSpec;
   },
 
 
