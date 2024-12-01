@@ -1,5 +1,5 @@
 { "name": "postgres-dump-writer-helpers-220524-pmb",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Utility functions for exporting lists of dictionary objects as postgres files.",
   "keywords": [
     "postgres"
