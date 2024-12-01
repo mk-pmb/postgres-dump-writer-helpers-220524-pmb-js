@@ -5,6 +5,7 @@ import isStr from 'is-string';
 
 import adviseOnPgDataTypes from './adviseOnPgDataTypes.mjs';
 import basics from './basics.mjs';
+import pgTypeAliases from './pgTypeAliases.mjs';
 
 
 const { quoteId, quoteStr } = basics;
@@ -91,18 +92,9 @@ Object.assign(EX, {
   },
 
 
-  typeAlias: Object.assign(function a(t) { return getOwn(a, t, t); }, {
-    'char*': 'character varying',
-    ts: 'timestamptz(0)',
-    ts_milli: 'timestamptz(3)',
-    ts_micro: 'timestamptz(6)',
-    // ts_nano: 'timestamptz(9)', // beyond pg's time precision.
-  }),
-
-
   parseColSpecStr(s, n) {
     const [simplifiedTypeName, ...simplifiedTypeFlags] = s.split(/\s+/);
-    const pgType = EX.typeAlias(simplifiedTypeName);
+    const pgType = pgTypeAliases(simplifiedTypeName);
     const ignoredAdvice = [];
     const colSpec = {
       pgType,
