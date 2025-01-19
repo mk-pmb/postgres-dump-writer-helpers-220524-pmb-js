@@ -23,10 +23,11 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   const autoComboUniques = {};
 
   const tblName = opt.tableNamePrefix + tblNamePart;
+  const tblFullNameQ = quoteId(opt.schemaName) + '.' + quoteId(tblName);
 
   let code = '';
   if (opt.dropTable) {
-    code += ('DROP TABLE IF EXISTS ' + quoteId(tblName)
+    code += ('DROP TABLE IF EXISTS ' + tblFullNameQ
       + (opt.dropCascade ? ' CASCADE' : '') + ';\n');
   }
   if (code) { code += '\n'; }
