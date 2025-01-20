@@ -32,7 +32,6 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
   }
   if (code) { code += '\n'; }
 
-  const tblFullNameQ = quoteId(opt.schemaName) + '.' + quoteId(tblName);
   code += 'CREATE TABLE ' + tblFullNameQ + ' (\n';
 
   if (opt.primKeyName) {
@@ -45,20 +44,26 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
       + c.map(quoteId).join(', ') + t);
   }
 
+  const allColNames = [];
+  allColNames.quoted = [];
   let extraIndexes = '';
   Object.keys(colsSpec || false).forEach(function addCol(cName) {
     let cSpec = colsSpec[cName];
     if (!cSpec) { return; }
     if (isStr(cSpec)) { cSpec = EX.parseColSpecStr(cSpec, cName); }
     addCategListItem(autoComboUniques, cSpec.autoUniqueGroup, cName);
-    code += (',\n    ' + quoteId(cName) + ' ' + cSpec.pgType
+    allColNames.push(cName);
+    const quotedColName = quoteId(cName);
+    allColNames.quoted.push(quotedColName);
+    code += (',\n    ' + quotedColName + ' ' + cSpec.pgType
       + (cSpec.required ? ' NOT NULL' : ''));
     if (cSpec.indexAlgo) {
       extraIndexes += ('CREATE INDEX ' + quoteId(tblName + '_' + cName)
         + ' ON ' + tblFullNameQ + ' USING ' + cSpec.indexAlgo
-        + ' (' + quoteId(cName) + ');\n');
+        + ' (' + quotedColName + ');\n');
     }
   });
+  allColNames.quoted.glued = allColNames.quoted.join(', ');
 
   Object.values(autoComboUniques).forEach(function addAU(colNames) {
     code += indexLike(',\n    CONSTRAINT ', colNames, ' UNIQUE (', ')');
@@ -66,6 +71,8 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
 
   code += ') WITH (oids = false);\n';
   code += extraIndexes;
+  code += EX.noDuplicateRows(opt.noDuplicateRows,
+    { tblName, tblFullNameQ, allColNames });
 
 
 
@@ -118,6 +125,24 @@ Object.assign(EX, {
       trace: 'Column "' + n + '":',
     }, pgType);
     return colSpec;
+  },
+
+
+  noDuplicateRows(optNoDupes, st) {
+    /* I'd have loved to enable optNoDupes by default, but it's rather
+      difficult (see `avoiding_dupe_rows.md` for why), so currently we
+      can only do it for very easy tables. */
+    let algo = optNoDupes;
+    if (!algo) { return ''; }
+    if (algo === true) { algo = 'BTREE'; }
+    const { tblName, tblFullNameQ, allColNames } = st;
+    const idxNameQ = quoteId(tblName + '_no_duplicate_rows');
+    let code = '';
+    code += ('CREATE INDEX ' + idxNameQ + ' ON ' + tblFullNameQ
+      + '\n    USING ' + algo + ' (' + allColNames.quoted.glued + ');\n');
+    code += ('ALTER TABLE ' + tblFullNameQ + ' ADD CONSTRAINT ' + idxNameQ
+      + '\n    UNIQUE (' + allColNames.quoted.glued + ');\n');
+    return code;
   },
 
 
