@@ -137,11 +137,13 @@ Object.assign(EX, {
     if (!algo) { return ''; }
     if (algo === true) { algo = 'BTREE'; }
     const { tblName, tblFullNameQ, allColNames } = st;
-    const idxNameQ = quoteId(tblName + '_no_duplicate_rows');
+    const idxBaseName = tblName + '_no_duplicate_rows_';
+    const idxNameQ = quoteId(idxBaseName + 'index');
+    const chkNameQ = quoteId(idxBaseName + 'check');
     let code = '';
     code += ('CREATE INDEX ' + idxNameQ + ' ON ' + tblFullNameQ
       + '\n    USING ' + algo + ' (' + allColNames.quoted.glued + ');\n');
-    code += ('ALTER TABLE ' + tblFullNameQ + ' ADD CONSTRAINT ' + idxNameQ
+    code += ('ALTER TABLE ' + tblFullNameQ + ' ADD CONSTRAINT ' + chkNameQ
       + '\n    UNIQUE (' + allColNames.quoted.glued + ');\n');
     return code;
   },
