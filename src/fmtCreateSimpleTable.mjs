@@ -36,7 +36,7 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
 
   if (opt.primKeyName) {
     code += ('    ' + quoteId(opt.primKeyName)
-      + ' ' + opt.primKeyType + ' PRIMARY KEY');
+      + ' ' + opt.primKeyType + ' PRIMARY KEY,');
   }
 
   function indexLike(h, c, n, t) {
@@ -52,10 +52,11 @@ const EX = function fmtCreateSimpleTable(tblNamePart, colsSpec, customOpt) {
     if (!cSpec) { return; }
     if (isStr(cSpec)) { cSpec = EX.parseColSpecStr(cSpec, cName); }
     addCategListItem(autoComboUniques, cSpec.autoUniqueGroup, cName);
+    if (allColNames.length) { code += ','; }
     allColNames.push(cName);
     const quotedColName = quoteId(cName);
     allColNames.quoted.push(quotedColName);
-    code += (',\n    ' + quotedColName + ' ' + cSpec.pgType
+    code += ('\n    ' + quotedColName + ' ' + cSpec.pgType
       + (cSpec.required ? ' NOT NULL' : ''));
     if (cSpec.indexAlgo) {
       extraIndexes += ('CREATE INDEX ' + quoteId(tblName + '_' + cName)
