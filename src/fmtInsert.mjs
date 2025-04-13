@@ -9,10 +9,12 @@ const doNothing = Boolean;
 const EX = function fmtInsert(rec, ...merge) {
   if (merge.length) { return EX(Object.assign({}, rec, ...merge)); }
   const cols = Object.keys(rec).filter(k => /^[a-z]/.test(k));
+  const slots = (rec.SLOTS || false);
   const colNamesGlued = cols.map(basics.quoteId).join(', ');
   const insHead = ('INSERT INTO ' + basics.quoteId(rec.TABLE)
     + ' (' + colNamesGlued + ')');
-  const valuesQuoted = cols.map(c => basics.quoteVal(rec[c]));
+  const valueEncoder = (slots ? basics.makeSlotifier(slots) : basics.quoteVal);
+  const valuesQuoted = cols.map(c => valueEncoder(rec[c]));
   const valuesGlued = '(' + valuesQuoted.join(', ') + ')';
   const insFull = (insHead + ' VALUES ' + valuesGlued + ';');
   (rec.PRINT || doNothing)(insFull);
